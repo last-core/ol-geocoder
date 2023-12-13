@@ -2,7 +2,7 @@
  * ol-geocoder - v4.3.2-dev
  * A geocoder extension compatible with OpenLayers v6.x, v7.x & v8.x
  * https://github.com/Dominique92/ol-geocoder
- * Built: 09/10/2023 10:43:17
+ * Built: 13/12/2023, 11:09:21
  */
  
  
@@ -130,6 +130,9 @@
     limit: 5,
     keepOpen: false,
     preventDefault: false,
+    autoComplete: false,
+    autoCompleteMinLength: 2,
+    autoCompleteTimeout: 200,
     preventPanning: false,
     preventMarker: false,
     defaultFlyResolution: 10, // Meters per pixel
@@ -859,7 +862,15 @@
       };
       const handleValue = (evt) => {
         const value = evt.target.value.trim();
-
+        if (this.options.autoComplete && value !== lastQuery) {
+          lastQuery = value;
+          timeout && clearTimeout(timeout);
+          timeout = setTimeout(() => {
+            if (value.length >= this.options.autoCompleteMinLength) {
+              this.query(value);
+            }
+          }, this.options.autoCompleteTimeout);
+        }
         value.length !== 0 ?
           removeClass(this.els.search, klasses.hidden) :
           addClass(this.els.search, klasses.hidden);
