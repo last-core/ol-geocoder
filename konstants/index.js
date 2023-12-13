@@ -36,6 +36,9 @@ export const DEFAULT_OPTIONS = {
   limit: 5,
   keepOpen: false,
   preventDefault: false,
+  autoComplete: false,
+  autoCompleteMinLength: 2,
+  autoCompleteTimeout: 200,
   preventPanning: false,
   preventMarker: false,
   defaultFlyResolution: 10, // Meters per pixel

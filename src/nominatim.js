@@ -96,7 +96,15 @@ export default class Nominatim {
     };
     const handleValue = (evt) => {
       const value = evt.target.value.trim();
-
+      if (this.options.autoComplete && value !== lastQuery) {
+        lastQuery = value;
+        timeout && clearTimeout(timeout);
+        timeout = setTimeout(() => {
+          if (value.length >= this.options.autoCompleteMinLength) {
+            this.query(value);
+          }
+        }, this.options.autoCompleteTimeout);
+      }
       value.length !== 0 ?
         removeClass(this.els.search, klasses.hidden) :
         addClass(this.els.search, klasses.hidden);
