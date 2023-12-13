@@ -4,26 +4,17 @@ import Point from 'ol/geom/Point';
 import Feature from 'ol/Feature';
 import * as proj from 'ol/proj';
 
-import {
-  VARS,
-  TARGET_TYPE,
-  PROVIDERS,
-  EVENT_TYPE
-} from '../konstants';
+import { VARS, TARGET_TYPE, PROVIDERS, EVENT_TYPE } from '../konstants';
 import {
   hasClass,
   addClass,
   removeClass,
   createElement,
   template,
-  removeAllChildren,
+  removeAllChildren
 } from './helpers/dom';
-import {
-  randomId
-} from './helpers/mix';
-import {
-  json
-} from './helpers/ajax';
+import { randomId } from './helpers/mix';
+import { json } from './helpers/ajax';
 
 import Photon from './providers/photon';
 import OpenStreet from './providers/osm';
@@ -48,23 +39,23 @@ export default class Nominatim {
     this.layer = new LayerVector({
       name: this.layerName,
       source: new SourceVector(),
-      displayInLayerSwitcher: false, // Remove search layer from legend https://github.com/Dominique92/ol-geocoder/issues/256
+      displayInLayerSwitcher: false // Remove search layer from legend https://github.com/Dominique92/ol-geocoder/issues/256
     });
 
     this.options = base.options;
     // provider is either the name of a built-in provider as a string or an
     // object that implements the provider API
     this.options.provider =
-      typeof this.options.provider === 'string' ?
-      this.options.provider.toLowerCase() :
-      this.options.provider;
+      typeof this.options.provider === 'string'
+        ? this.options.provider.toLowerCase()
+        : this.options.provider;
     this.provider = this.newProvider();
-
+    this.timeout = null;
     this.els = els;
     this.lastQuery = '';
     this.container = this.els.container;
     this.registeredListeners = {
-      mapClick: false,
+      mapClick: false
     };
     this.setListeners();
   }
@@ -76,13 +67,13 @@ export default class Nominatim {
     };
     const query = (evt) => {
       const value = evt.target.value.trim();
-      const hit = evt.key ?
-        evt.key === 'Enter' :
-        evt.which ?
-        evt.which === 13 :
-        evt.keyCode ?
-        evt.keyCode === 13 :
-        false;
+      const hit = evt.key
+        ? evt.key === 'Enter'
+        : evt.which
+        ? evt.which === 13
+        : evt.keyCode
+        ? evt.keyCode === 13
+        : false;
 
       if (hit) {
         evt.preventDefault();
@@ -96,18 +87,18 @@ export default class Nominatim {
     };
     const handleValue = (evt) => {
       const value = evt.target.value.trim();
-      if (this.options.autoComplete && value !== lastQuery) {
-        lastQuery = value;
-        timeout && clearTimeout(timeout);
-        timeout = setTimeout(() => {
+      if (this.options.autoComplete && value !== this.lastQuery) {
+        this.lastQuery = value;
+        this.timeout && clearTimeout(this.timeout);
+        this.timeout = setTimeout(() => {
           if (value.length >= this.options.autoCompleteMinLength) {
             this.query(value);
           }
         }, this.options.autoCompleteTimeout);
       }
-      value.length !== 0 ?
-        removeClass(this.els.search, klasses.hidden) :
-        addClass(this.els.search, klasses.hidden);
+      value.length !== 0
+        ? removeClass(this.els.search, klasses.hidden)
+        : addClass(this.els.search, klasses.hidden);
     };
 
     this.els.input.addEventListener('keypress', query, false);
@@ -132,7 +123,7 @@ export default class Nominatim {
       lang: this.options.lang,
       countrycodes: this.options.countrycodes,
       viewbox: this.options.viewbox,
-      limit: this.options.limit,
+      limit: this.options.limit
     });
 
     if (this.lastQuery === q && this.els.result.firstChild) return;
@@ -143,7 +134,7 @@ export default class Nominatim {
 
     const ajax = {
       url: parameters.url,
-      data: parameters.params,
+      data: parameters.params
     };
 
     if (parameters.callbackName) {
@@ -215,9 +206,7 @@ export default class Nominatim {
     const projection = map.getView().getProjection();
     const coord = proj.transform(coord_, 'EPSG:4326', projection);
 
-    let {
-      bbox
-    } = place;
+    let { bbox } = place;
 
     if (bbox) {
       bbox = proj.transformExtent(
@@ -232,7 +221,7 @@ export default class Nominatim {
     const address = {
       formatted: addressHtml,
       details: addressObj,
-      original: addressOriginal,
+      original: addressOriginal
     };
 
     this.options.keepOpen === false && this.clearResults(true);
@@ -244,7 +233,7 @@ export default class Nominatim {
         address,
         coordinate: coord,
         bbox,
-        place,
+        place
       });
     } else {
       // Display a marker
@@ -256,7 +245,7 @@ export default class Nominatim {
         feature,
         coordinate: coord,
         bbox,
-        place,
+        place
       });
     }
 
@@ -264,14 +253,14 @@ export default class Nominatim {
       // Move & zoom to the position
       if (bbox) {
         map.getView().fit(bbox, {
-          duration: 500,
+          duration: 500
         });
       } else {
         map.getView().animate({
           center: coord,
           // ol-geocoder results are too much zoomed -in Dominique92/ol-geocoder#235
           resolution: this.options.defaultFlyResolution,
-          duration: 500,
+          duration: 500
         });
       }
     }
@@ -358,21 +347,22 @@ export default class Nominatim {
 
     // one-time fire click
     mapElement.addEventListener(
-      'click', {
+      'click',
+      {
         handleEvent(evt) {
           that.clearResults(true);
           mapElement.removeEventListener(evt.type, this, false);
           that.registeredListeners.mapClick = false;
-        },
+        }
       },
       false
     );
   }
 
   clearResults(collapse) {
-    collapse && this.options.targetType === TARGET_TYPE.GLASS ?
-      this.collapse() :
-      removeAllChildren(this.els.result);
+    collapse && this.options.targetType === TARGET_TYPE.GLASS
+      ? this.collapse()
+      : removeAllChildren(this.els.result);
   }
 
   getSource() {

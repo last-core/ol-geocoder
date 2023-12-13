@@ -2,7 +2,7 @@
  * ol-geocoder - v4.3.2-dev
  * A geocoder extension compatible with OpenLayers v6.x, v7.x & v8.x
  * https://github.com/Dominique92/ol-geocoder
- * Built: 13/12/2023, 11:09:21
+ * Built: 13/12/2023, 11:26:12
  */
  
  
@@ -814,23 +814,23 @@
       this.layer = new LayerVector__default["default"]({
         name: this.layerName,
         source: new SourceVector__default["default"](),
-        displayInLayerSwitcher: false, // Remove search layer from legend https://github.com/Dominique92/ol-geocoder/issues/256
+        displayInLayerSwitcher: false // Remove search layer from legend https://github.com/Dominique92/ol-geocoder/issues/256
       });
 
       this.options = base.options;
       // provider is either the name of a built-in provider as a string or an
       // object that implements the provider API
       this.options.provider =
-        typeof this.options.provider === 'string' ?
-        this.options.provider.toLowerCase() :
-        this.options.provider;
+        typeof this.options.provider === 'string'
+          ? this.options.provider.toLowerCase()
+          : this.options.provider;
       this.provider = this.newProvider();
-
+      this.timeout = null;
       this.els = els;
       this.lastQuery = '';
       this.container = this.els.container;
       this.registeredListeners = {
-        mapClick: false,
+        mapClick: false
       };
       this.setListeners();
     }
@@ -842,13 +842,13 @@
       };
       const query = (evt) => {
         const value = evt.target.value.trim();
-        const hit = evt.key ?
-          evt.key === 'Enter' :
-          evt.which ?
-          evt.which === 13 :
-          evt.keyCode ?
-          evt.keyCode === 13 :
-          false;
+        const hit = evt.key
+          ? evt.key === 'Enter'
+          : evt.which
+          ? evt.which === 13
+          : evt.keyCode
+          ? evt.keyCode === 13
+          : false;
 
         if (hit) {
           evt.preventDefault();
@@ -862,18 +862,18 @@
       };
       const handleValue = (evt) => {
         const value = evt.target.value.trim();
-        if (this.options.autoComplete && value !== lastQuery) {
-          lastQuery = value;
-          timeout && clearTimeout(timeout);
-          timeout = setTimeout(() => {
+        if (this.options.autoComplete && value !== this.lastQuery) {
+          this.lastQuery = value;
+          this.timeout && clearTimeout(this.timeout);
+          this.timeout = setTimeout(() => {
             if (value.length >= this.options.autoCompleteMinLength) {
               this.query(value);
             }
           }, this.options.autoCompleteTimeout);
         }
-        value.length !== 0 ?
-          removeClass(this.els.search, klasses.hidden) :
-          addClass(this.els.search, klasses.hidden);
+        value.length !== 0
+          ? removeClass(this.els.search, klasses.hidden)
+          : addClass(this.els.search, klasses.hidden);
       };
 
       this.els.input.addEventListener('keypress', query, false);
@@ -898,7 +898,7 @@
         lang: this.options.lang,
         countrycodes: this.options.countrycodes,
         viewbox: this.options.viewbox,
-        limit: this.options.limit,
+        limit: this.options.limit
       });
 
       if (this.lastQuery === q && this.els.result.firstChild) return;
@@ -909,7 +909,7 @@
 
       const ajax = {
         url: parameters.url,
-        data: parameters.params,
+        data: parameters.params
       };
 
       if (parameters.callbackName) {
@@ -981,9 +981,7 @@
       const projection = map.getView().getProjection();
       const coord = proj__namespace.transform(coord_, 'EPSG:4326', projection);
 
-      let {
-        bbox
-      } = place;
+      let { bbox } = place;
 
       if (bbox) {
         bbox = proj__namespace.transformExtent(
@@ -998,7 +996,7 @@
       const address = {
         formatted: addressHtml,
         details: addressObj,
-        original: addressOriginal,
+        original: addressOriginal
       };
 
       this.options.keepOpen === false && this.clearResults(true);
@@ -1010,7 +1008,7 @@
           address,
           coordinate: coord,
           bbox,
-          place,
+          place
         });
       } else {
         // Display a marker
@@ -1022,7 +1020,7 @@
           feature,
           coordinate: coord,
           bbox,
-          place,
+          place
         });
       }
 
@@ -1030,14 +1028,14 @@
         // Move & zoom to the position
         if (bbox) {
           map.getView().fit(bbox, {
-            duration: 500,
+            duration: 500
           });
         } else {
           map.getView().animate({
             center: coord,
             // ol-geocoder results are too much zoomed -in Dominique92/ol-geocoder#235
             resolution: this.options.defaultFlyResolution,
-            duration: 500,
+            duration: 500
           });
         }
       }
@@ -1124,21 +1122,22 @@
 
       // one-time fire click
       mapElement.addEventListener(
-        'click', {
+        'click',
+        {
           handleEvent(evt) {
             that.clearResults(true);
             mapElement.removeEventListener(evt.type, this, false);
             that.registeredListeners.mapClick = false;
-          },
+          }
         },
         false
       );
     }
 
     clearResults(collapse) {
-      collapse && this.options.targetType === TARGET_TYPE.GLASS ?
-        this.collapse() :
-        removeAllChildren(this.els.result);
+      collapse && this.options.targetType === TARGET_TYPE.GLASS
+        ? this.collapse()
+        : removeAllChildren(this.els.result);
     }
 
     getSource() {
